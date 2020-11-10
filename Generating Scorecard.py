@@ -1,6 +1,7 @@
 import re
 import pdb
 import math
+from tkinter import *
 
 scores = {'one':1,'two':2,'three':3,'four':4,'five':5,'six':6}
 batting_team = {}
@@ -38,8 +39,6 @@ def addingBatsmenData(data,lines,runs):
         batting_team[data.group(2)]['R'] += int(runs)
     batting_team[data.group(2)]['B'] += 1
 
-def addingBowlerData(data,lines,runs):
-    pass
 
 def addingExtras(data,lines,temp):
     if data.group(2) not in batting_team:
@@ -125,7 +124,7 @@ def calculatingEconomy(bowling_team):
 
 def calculating_SR(batting_team):
     for batsmen in batting_team:
-        batting_team[batsmen]['SR'] = round((batting_team[batsmen]['R']/batting_team[batsmen]['B']),4) * 100
+        batting_team[batsmen]['SR'] = round((batting_team[batsmen]['R']/batting_team[batsmen]['B'])*100,3) 
 
 def totalRuns(batting_team,extras):
     total_runs = 0
@@ -135,18 +134,106 @@ def totalRuns(batting_team,extras):
         total_runs += extras[extra]
     return total_runs
 
+def totalWickets(bowling_team):
+    total_wick = 0
+    for bowler in bowling_team:
+        total_wick += bowling_team[bowler]['W']
+    return total_wick
+
+def totalOvers(bowling_team):
+    total_overs = 0
+    for bowler in bowling_team:
+        total_overs += bowling_team[bowler]['O']
+    return total_overs
+
 def totalExtras(extras):
     total_extras = 0
     for extra in extras:
         total_extras += extras[extra]
     return total_extras
 
+def creatingScorecard(bat_name,bowl_name,batting_team,bowling_team,extras):
+    root = Tk()
+    root.title("Cricket Scorecard")
+    frame = LabelFrame(root,text='Batting Team',pady=10,padx=10,fg='#de0404',bd=10,font=('Ariel',16,'bold'))
+    frame.grid(row=0,column=0)
+    batsmens = list(batting_team.keys())
+    stats = list(batting_team.values())
+    curr_row = 0
+
+    Label(frame,text=bat_name,font=('Arial',14,'bold')).grid(row=0,column=0)
+    batting_details = ['Batsmen','','R','B','4s','6s','SR']
+
+    for i in range(len(batting_details)):
+        e = Label(frame,text=batting_details[i],width=14,fg='#2570cc',font=('Arial',12,'bold'))
+        e.grid(row=1,column=i)
+
+
+    for i in range(len(batsmens)):
+        e = Label(frame,text=batsmens[i],width=15,font=('Arial',12))
+        e.grid(row=i+2,column=0)
+        stat = list(stats[i].values())
+        for j in range(1,len(stat)+1):
+            if j == 1:
+                e = Label(frame,text=stat[j-1],width=25,font=('Arial',12))
+                e.grid(row=i+2,column=j)
+            else:
+                e = Label(frame,text=stat[j-1],width=8,font=('Arial',12))
+                e.grid(row=i+2,column=j)
+
+        curr_row = i+2
+
+    extras_frame = LabelFrame(root,text='Extras',fg='#de0404',bd=10,font=('Arial',16,'bold'))
+    extras_frame.grid(row=1,column=0)
+    Label(extras_frame,text='Extras',font=('Arial',14,'bold')).grid(row=0,column=0)
+    extras_string = "("+'b: '+str(extras['b'])+', lb: '+str(extras['lb'])+', w: '+str(extras['nb'])+")"
+    Label(extras_frame,text= str(totalExtras(extras))+" "+extras_string,font=('Arial',12)).grid(row=0,column=1)
+
+    total_frame = LabelFrame(root,text='Total',fg='#de0404',bd=8,font=('Arial',16,'bold'))
+    total_frame.grid(row=2,column=0)
+    Label(total_frame,text='Total',width=7,font=('Arial',14,'bold')).grid(row=0,column=0)
+    Label(total_frame,text= str(totalRuns(batting_team,extras))+"-"+str(totalWickets(bowling_team))+" ("+str(totalOvers(bowling_team))+' Ovr)',fg='#e60000',font=('Arial',13,'bold')).grid(row=0,column=1)
+
+
+    bottomFrame = LabelFrame(root,text="Bowling Team",pady=10,padx=10,fg='#de0404',bd=10,font=('Ariel',16,'bold'))
+    bottomFrame.grid(row=3,column=0)
+    Label(bottomFrame,text=bowl_name,font=('Arial',14,'bold')).grid(row=0,column=0)
+    curr_row = curr_row +2
+
+
+    bowlers = list(bowling_team.keys())
+    stats = list(bowling_team.values())
+    bowling_details = ['Bowler','O','M','R','W','NB','WD','ECO']
+
+    for i in range(len(bowling_details)):
+        e = Label(bottomFrame,text=bowling_details[i],width=13,fg='#2570cc',font=('Arial',12,'bold'))
+        e.grid(row=1 ,column=i)
+    curr_row += 1
+
+    for i in range(len(bowlers)):
+        e = Label(bottomFrame,text=bowlers[i],width=15,font=('Arial',12))
+        e.grid(row=i+2,column=0)
+        stat = list(stats[i].values())
+        for j in range(1,len(stat)+1):
+            e = Label(bottomFrame,text=stat[j-1],width=5,font=('Arial',12))
+            e.grid(row=i+2,column=j)
+     
+    root.mainloop()
+
 if __name__ == "__main__":
     start()
     calculating_SR(batting_team)
     calculatingEconomy(bowling_team)
-    print(totalRuns(batting_team,extras))
-    print(totalExtras(extras))
-    print(batting_team)
-    print(bowling_team)
+    print("Total runs scored: "+str(totalRuns(batting_team,extras)))
+    print("Total wickets taken: "+str(totalWickets(bowling_team)))
+    print("Total Extras conceded: "+str(totalExtras(extras)))
     print(extras)
+    print("Batting team data:")
+    print(batting_team)
+    print('\n')
+    print("Bowling team data:")
+    print(bowling_team)
+    print('\n')
+    bat_name = 'KKR'
+    bowl_name = 'KXIP'
+    creatingScorecard(bat_name,bowl_name,batting_team,bowling_team,extras)
